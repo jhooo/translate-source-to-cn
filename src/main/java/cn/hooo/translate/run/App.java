@@ -1,7 +1,7 @@
 package cn.hooo.translate.run;
 
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,8 +24,8 @@ public class App {
 
     private void exe(String[] args) {
         // or E:\\Temp\\spring-core-5.0.6.RELEASE-sources
-        String path = "E:\\tools\\maven_repo\\org\\springframework\\spring-core\\5.0.6.RELEASE\\spring-core-5.0.6.RELEASE-sources.jar";
-        //		String path = "E:\\code\\spring-framework-master\\spring-core";
+        //        String path = "E:\\tools\\maven_repo\\org\\springframework\\spring-core\\5.0.6.RELEASE\\spring-core-5.0.6.RELEASE-sources.jar";
+        String path = "E:\\sourcecode\\sts_space\\log4j";
         File f = new File(path);
         PrintCnPath p = null;
         if (f.isDirectory()) {
@@ -96,6 +96,7 @@ public class App {
             //翻译
             name = isFile && !prefix.equals("") ? name + "(" + translateFile(name) + ")"
                     : name + "(" + translateDir(name) + ")";
+            //打印到控制台
             System.out.println(prefix + name);
             prefix = prefix.replace("├─", "│").replace("└─", " ");
 
@@ -149,12 +150,21 @@ public class App {
             if (isFile) {
                 return;
             }
-            File files[] = dir.listFiles(new FilenameFilter() {
+            File files[] = dir.listFiles(new FileFilter() {
                 @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".java") || !name.endsWith(".class");
+                public boolean accept(File pathname) {
+                    //                   System.out.println(pathname);
+                    return (pathname.isDirectory() && !pathname.getName().contains(".svn"))
+                            || pathname.getName().endsWith(".java");
                 }
             });
+            //            File files[] = dir.listFiles(new FilenameFilter() {
+            //                @Override
+            //                public boolean accept(File dir, String name) {
+            //                    System.out.println("dir:" + dir + "   name:" + name);
+            //                    return name.endsWith(".java") ;
+            //                }
+            //            });
             Arrays.sort(files, (a, b) -> {
                 int rs = -1;
                 if (a.isDirectory() && b.isFile()) {
@@ -182,13 +192,15 @@ public class App {
     }
 
     private String translateFile(String en) {
-        StringBuilder sbf = new StringBuilder();
+        StringBuilder sbf = new StringBuilder("");
         int dotIndex = en.indexOf(".");
-        String f = en.substring(0, dotIndex);
-        String[] cns = CamelSplitUtil.split(f);
-        for (String c : cns) {
-            //翻译分割后的
-            sbf.append(translateDir(c));
+        if (dotIndex > 0) {
+            String f = en.substring(0, dotIndex);
+            String[] cns = CamelSplitUtil.split(f);
+            for (String c : cns) {
+                //翻译分割后的
+                sbf.append(translateDir(c));
+            }
         }
         return sbf.toString();
     }
